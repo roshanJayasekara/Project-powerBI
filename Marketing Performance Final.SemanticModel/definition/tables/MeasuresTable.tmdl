@@ -1,0 +1,953 @@
+table MeasuresTable
+	lineageTag: f82f1804-c7a4-43b9-be68-c4f7ac921f49
+
+	measure 'Total Sessions' = SUM(FactWeb[sessions])
+		formatString: 0
+		lineageTag: e65f76d3-ef90-428f-94b8-6af70b194f8b
+
+	measure 'Total Pageviews' = SUM(FactWeb[pageviews])
+		formatString: 0
+		lineageTag: fdca5826-2e0a-4c62-9a6d-1f59729b6e12
+
+	measure 'Total Conversions' = SUM(FactWeb[conversions])
+		formatString: 0
+		lineageTag: fbcc313d-0f4e-413c-97ad-af8d29583442
+
+	measure 'Conversion Rate' =
+			
+			DIVIDE([Total Conversions], [Total Sessions])
+		lineageTag: cbd7f3ce-b016-40c4-8dd1-e01f79a66be3
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Avg Pages per Session' =
+			
+			DIVIDE([Total Pageviews], [Total Sessions])
+		lineageTag: 8123a403-b535-418b-8a9a-c976bf904f22
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Monthly Sessions' =
+			
+			CALCULATE([Total Sessions], DATESMTD(DimDate[date]))
+		formatString: 0
+		lineageTag: dfd00730-2919-4951-ac47-8dd59280755b
+
+	measure 'Total Form Submissions' =
+			
+			SUM(FactFormSubmissions[submissions])
+		formatString: 0
+		lineageTag: 8f4fb039-6029-4ef9-8d12-551d6ad55ae3
+
+	measure 'Total Bounces' = SUM(FactWeb[bounces])
+		formatString: 0
+		lineageTag: d8853d28-d1f3-45cb-bf08-46a3e47a27f3
+
+	measure 'Bounce Rate' =
+			
+			DIVIDE([Total Bounces], [Total Sessions])
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: de49d162-4968-4e87-b368-0a336e9e1925
+
+	measure 'Session Growth %' =
+			
+			VAR PrevSessions = CALCULATE([Total Sessions], DATEADD(DimDate[date], -1, MONTH))
+			RETURN DIVIDE([Total Sessions] - PrevSessions, PrevSessions)
+		lineageTag: ea68d0c8-a591-4154-bb37-07996c7e87c3
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total Users' = SUM(FactWeb[users])
+		formatString: 0
+		lineageTag: 82117c47-e857-4652-9c06-adc1fc9006a9
+
+	measure 'Max Date' =
+			
+			CALCULATE(MAX(DimDate[date]), ALL(DimDate[date]))
+		formatString: General Date
+		lineageTag: f3da435f-e13a-4219-907a-c9cfdccd0acc
+
+	measure 'Min Date' =
+			
+			
+			VAR _selected = SELECTEDVALUE('Period Slicer'[Slicer Options])
+			VAR _Last7D = ([Max Date]-6)
+			VAR _Last28D = ([Max Date]-27)
+			VAR _Last90D = ([Max Date]-89)
+			VAR _Thisyear = DATE(YEAR([Max Date]),1,1)
+			
+			
+			RETURN
+			SWITCH(
+			    _selected,
+			    "7d", _Last7D,
+			    "28d", _Last28D,
+			    "90d", _Last90D,
+			    "This year", _Thisyear
+			)
+		formatString: General Date
+		lineageTag: f013821a-5520-4902-bf31-55331a8ff3ff
+
+	measure 'Dynamic Session Growth %' = ```
+			
+			
+			DIVIDE(
+			    [Dynamic sessions] -[Dynamic previous Sessions],
+			    [Dynamic previous Sessions]
+			)
+			
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 2c076536-edca-4ffc-a248-de96c504a90e
+
+	measure 'Dynamic pageviws' =
+			
+			CALCULATE(
+			    [Total Pageviews],DATESBETWEEN(DimDate[date],[Min Date],[Max Date]))
+		formatString: #,0
+		lineageTag: c7cf69a6-d111-4dba-9769-c336b52815fe
+
+	measure 'Dynamic CR' =
+			
+			CALCULATE(
+			    [Conversion Rate],DATESBETWEEN(DimDate[date],[Min Date],[Max Date]))
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 247ce37e-8509-493c-b131-528af744d885
+
+	measure 'Total Reach' = SUM(FactSocialPerformance[reach])
+		formatString: 0
+		lineageTag: e389c9d4-63b5-49fc-b58e-c11e9ef78644
+
+	measure 'Dynamic Bounce' =
+			
+			CALCULATE(
+			    [Total Bounces],DATESBETWEEN(DimDate[date],[Min Date],[Max Date]))
+		formatString: 0
+		lineageTag: 63bb94e2-ad25-47c3-bb56-4d0f60f4fe3e
+
+	measure 'Dynamic BR' =
+			
+			DIVIDE([Dynamic Bounce],[Dynamic sessions])
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: f88deba9-79a8-4a69-b0a7-747335d99842
+
+	measure 'Sessions sparkline' = ```
+			
+			// Static line color - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+			VAR LineColour = "%23118DFF"
+			VAR PointColour = "white"
+			VAR Defs = "<defs>
+			    <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+			        <stop stop-color='#118DFF' offset='0' />
+			        <stop stop-color='#118DFF' offset='0.3' />
+			        <stop stop-color='white' offset='1' />
+			    </linearGradient>
+			</defs>"
+			// "Date" field used in this example along the X axis
+			VAR XMinDate = [Min Date]
+			VAR XMaxDate = [Max Date]
+			
+			// Obtain overall min and overall max measure values when evaluated for each date
+			VAR YMinValue = MINX(Values(DimDate[date]),CALCULATE([Total Sessions]))
+			VAR YMaxValue = MAXX(Values(DimDate[date]),CALCULATE([Total Sessions]))
+			
+			// Build table of X & Y coordinates and fit to 50 x 150 viewbox
+			VAR SparklineTable = ADDCOLUMNS(
+			    SUMMARIZE(DimDate,DimDate[date]),
+			        "X",INT(150 * DIVIDE(DimDate[date] - XMinDate, XMaxDate - XMinDate)),
+			        "Y",INT(50 * DIVIDE([Total Sessions] - YMinValue,YMaxValue - YMinValue)))
+			
+			// Concatenate X & Y coordinates to build the sparkline
+			VAR Lines = CONCATENATEX(SparklineTable,[X] & "," & 50-[Y]," ", DimDate[date])
+			
+			// Last data points on the line
+			VAR LastSparkYValue = MAXX( FILTER(SparklineTable, DimDate[date] = XMaxDate), [Y])
+			VAR LastSparkXValue = MAXX( FILTER(SparklineTable, DimDate[date] = XMaxDate), [X])
+			
+			// Add to SVG, and verify Data Category is set to Image URL for this measure
+			VAR SVGImageURL = 
+			    "data:image/svg+xml;utf8," & 
+			    --- gradient---
+			    "<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -7 164 64'>" & Defs & 
+			     "<polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+			      stroke-width='0' points=' 0 50 " & Lines & 
+			      " 150 150 Z '/>" &
+			    --- Lines---
+			    "<polyline 
+			        fill='transparent' stroke='" & LineColour & "' 
+			        stroke-linecap='round' stroke-linejoin='round' 
+			        stroke-width='3' points=' " & Lines & 
+			      " '/>" &
+			    --- Last Point---
+			        "<circle cx='"& LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & LineColour & "' stroke-width='3' fill='" & PointColour & "' />" &
+			        "</svg>"
+			RETURN SVGImageURL
+			```
+		lineageTag: 75da952c-1a48-4769-9779-478386c8075b
+
+	measure 'Dynamic sessions' =
+			
+			CALCULATE(
+			    [Total Sessions],DATESBETWEEN(DimDate[date],[Min Date],[Max Date]))
+		formatString: 0
+		lineageTag: ffb963d5-cd9c-43f1-9dfa-c6b24084b7f3
+
+	measure 'Bounce rate sparkline' = ```
+			
+			// Static line color - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+			VAR LineColour = "%23118DFF"
+			VAR PointColour = "white"
+			VAR Defs = "<defs>
+			    <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+			        <stop stop-color='#118DFF' offset='0' />
+			        <stop stop-color='#118DFF' offset='0.3' />
+			        <stop stop-color='white' offset='1' />
+			    </linearGradient>
+			</defs>"
+			// "Date" field used in this example along the X axis
+			VAR XMinDate = [Min Date]
+			VAR XMaxDate = [Max Date]
+			
+			// Obtain overall min and overall max measure values when evaluated for each date
+			VAR YMinValue = MINX(Values(DimDate[date]),CALCULATE([Total Bounces]))
+			VAR YMaxValue = MAXX(Values(DimDate[date]),CALCULATE([Total Bounces]))
+			
+			// Build table of X & Y coordinates and fit to 50 x 150 viewbox
+			VAR SparklineTable = ADDCOLUMNS(
+			    SUMMARIZE(DimDate,DimDate[date]),
+			        "X",INT(150 * DIVIDE(DimDate[date] - XMinDate, XMaxDate - XMinDate)),
+			        "Y",INT(50 * DIVIDE([Total Bounces] - YMinValue,YMaxValue - YMinValue)))
+			
+			// Concatenate X & Y coordinates to build the sparkline
+			VAR Lines = CONCATENATEX(SparklineTable,[X] & "," & 50-[Y]," ", DimDate[date])
+			
+			// Last data points on the line
+			VAR LastSparkYValue = MAXX( FILTER(SparklineTable, DimDate[date] = XMaxDate), [Y])
+			VAR LastSparkXValue = MAXX( FILTER(SparklineTable, DimDate[date] = XMaxDate), [X])
+			
+			// Add to SVG, and verify Data Category is set to Image URL for this measure
+			VAR SVGImageURL = 
+			    "data:image/svg+xml;utf8," & 
+			    --- gradient---
+			    "<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -7 164 64'>" & Defs & 
+			     "<polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+			      stroke-width='0' points=' 0 50 " & Lines & 
+			      " 150 150 Z '/>" &
+			    --- Lines---
+			    "<polyline 
+			        fill='transparent' stroke='" & LineColour & "' 
+			        stroke-linecap='round' stroke-linejoin='round' 
+			        stroke-width='3' points=' " & Lines & 
+			      " '/>" &
+			    --- Last Point---
+			        "<circle cx='"& LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & LineColour & "' stroke-width='3' fill='" & PointColour & "' />" &
+			        "</svg>"
+			RETURN SVGImageURL
+			```
+		lineageTag: 79984795-954d-435e-a571-9a3c24cdc23e
+
+	measure 'Dynamic previous Sessions' = ```
+			
+			
+			VAR DaysCount = [Max Date] - [Min Date] + 1
+			VAR PrevMinDate = [Min Date] - DaysCount
+			VAR PrevMaxDate = [Max Date] - DaysCount
+			
+			
+			RETURN
+			CALCULATE(
+			    [Total Sessions],
+			    ALL(DimDate),
+			    DATESBETWEEN(DimDate[date], PrevMinDate, PrevMaxDate)
+			)
+			
+			```
+		formatString: 0
+		lineageTag: 8068ab6a-bda0-4f4b-a6b8-f739d330bbc5
+
+	measure 'Total Engagement' = SUM(FactSocialPerformance[engagements])
+		formatString: 0
+		lineageTag: 9cf5dfee-6c79-43ae-af27-b749ad1d90ed
+
+	measure 'Dynamic Reach' =
+			
+			CALCULATE(
+			    [Total Reach],DATESBETWEEN(DimDate[date],[Min Date],[Max Date]))
+		formatString: 0
+		lineageTag: 3696cd9e-3648-4cfe-b317-30c73dcc1cb1
+
+	measure 'Dynamic Engagement' =
+			
+			CALCULATE(
+			    [Total Engagement],DATESBETWEEN(DimDate[date],[Min Date],[Max Date]))
+		formatString: 0
+		lineageTag: efa2502b-2f74-4f7d-8ed5-b9a4ab14a4c7
+
+	measure 'Reach sparkline' = ```
+			
+			// Static line color - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+			VAR LineColour = "%23118DFF"
+			VAR PointColour = "white"
+			VAR Defs = "<defs>
+			    <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+			        <stop stop-color='#118DFF' offset='0' />
+			        <stop stop-color='#118DFF' offset='0.3' />
+			        <stop stop-color='white' offset='1' />
+			    </linearGradient>
+			</defs>"
+			// "Date" field used in this example along the X axis
+			VAR XMinDate = [Min Date]
+			VAR XMaxDate = [Max Date]
+			
+			// Obtain overall min and overall max measure values when evaluated for each date
+			VAR YMinValue = MINX(Values(DimDate[date]),CALCULATE([Total Reach]))
+			VAR YMaxValue = MAXX(Values(DimDate[date]),CALCULATE([Total Reach]))
+			
+			// Build table of X & Y coordinates and fit to 50 x 150 viewbox
+			VAR SparklineTable = ADDCOLUMNS(
+			    SUMMARIZE(DimDate,DimDate[date]),
+			        "X",INT(150 * DIVIDE(DimDate[date] - XMinDate, XMaxDate - XMinDate)),
+			        "Y",INT(50 * DIVIDE([Total Reach] - YMinValue,YMaxValue - YMinValue)))
+			
+			// Concatenate X & Y coordinates to build the sparkline
+			VAR Lines = CONCATENATEX(SparklineTable,[X] & "," & 50-[Y]," ", DimDate[date])
+			
+			// Last data points on the line
+			VAR LastSparkYValue = MAXX( FILTER(SparklineTable, DimDate[date] = XMaxDate), [Y])
+			VAR LastSparkXValue = MAXX( FILTER(SparklineTable, DimDate[date] = XMaxDate), [X])
+			
+			// Add to SVG, and verify Data Category is set to Image URL for this measure
+			VAR SVGImageURL = 
+			    "data:image/svg+xml;utf8," & 
+			    --- gradient---
+			    "<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -7 164 64'>" & Defs & 
+			     "<polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+			      stroke-width='0' points=' 0 50 " & Lines & 
+			      " 150 150 Z '/>" &
+			    --- Lines---
+			    "<polyline 
+			        fill='transparent' stroke='" & LineColour & "' 
+			        stroke-linecap='round' stroke-linejoin='round' 
+			        stroke-width='3' points=' " & Lines & 
+			      " '/>" &
+			    --- Last Point---
+			        "<circle cx='"& LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & LineColour & "' stroke-width='3' fill='" & PointColour & "' />" &
+			        "</svg>"
+			RETURN SVGImageURL
+			```
+		lineageTag: a381085a-2d9d-4678-94dc-f72e25f49d38
+
+	measure 'Top Source' = ```
+			
+			VAR SourceTable =
+			    SUMMARIZE(
+			        DimUTM,
+			        DimUTM[source],
+			        "TotalSessions", [Total Sessions]
+			    )
+			VAR TopChannel =
+			    TOPN(1, SourceTable, [TotalSessions], DESC)
+			RETURN
+			MAXX(TopChannel, DimUTM[source])
+			
+			```
+		lineageTag: beecd2f3-a377-4c4f-9bfb-1cb4535452b7
+
+	measure 'Dynamic Conversions' =
+			
+			CALCULATE(
+			    [Total Conversions],DATESBETWEEN(DimDate[date],[Min Date],[Max Date]))
+		formatString: 0
+		lineageTag: fce89bcc-c90e-4003-8be2-7a618b91fc96
+
+	measure 'Dynamic previous Coversions' = ```
+			
+			
+			VAR DaysCount = [Max Date] - [Min Date] + 1
+			VAR PrevMinDate = [Min Date] - DaysCount
+			VAR PrevMaxDate = [Max Date] - DaysCount
+			
+			
+			RETURN
+			CALCULATE(
+			    [Total Conversions],
+			    DATESBETWEEN(DimDate[date], PrevMinDate, PrevMaxDate)
+			)
+			
+			```
+		formatString: 0
+		lineageTag: c199e79c-3b0d-47cb-8846-16911d109df0
+
+	measure 'Coversions sparkline' = ```
+			
+			// Static line color - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+			VAR LineColour = "%23118DFF"
+			VAR PointColour = "white"
+			VAR Defs = "<defs>
+			    <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+			        <stop stop-color='#118DFF' offset='0' />
+			        <stop stop-color='#118DFF' offset='0.3' />
+			        <stop stop-color='white' offset='1' />
+			    </linearGradient>
+			</defs>"
+			// "Date" field used in this example along the X axis
+			VAR XMinDate = [Min Date]
+			VAR XMaxDate = [Max Date]
+			
+			// Obtain overall min and overall max measure values when evaluated for each date
+			VAR YMinValue = MINX(Values(DimDate[date]),CALCULATE([Total Conversions]))
+			VAR YMaxValue = MAXX(Values(DimDate[date]),CALCULATE([Total Conversions]))
+			
+			// Build table of X & Y coordinates and fit to 50 x 150 viewbox
+			VAR SparklineTable = ADDCOLUMNS(
+			    SUMMARIZE(DimDate,DimDate[date]),
+			        "X",INT(150 * DIVIDE(DimDate[date] - XMinDate, XMaxDate - XMinDate)),
+			        "Y",INT(50 * DIVIDE([Total Conversions] - YMinValue,YMaxValue - YMinValue)))
+			
+			// Concatenate X & Y coordinates to build the sparkline
+			VAR Lines = CONCATENATEX(SparklineTable,[X] & "," & 50-[Y]," ", DimDate[date])
+			
+			// Last data points on the line
+			VAR LastSparkYValue = MAXX( FILTER(SparklineTable, DimDate[date] = XMaxDate), [Y])
+			VAR LastSparkXValue = MAXX( FILTER(SparklineTable, DimDate[date] = XMaxDate), [X])
+			
+			// Add to SVG, and verify Data Category is set to Image URL for this measure
+			VAR SVGImageURL = 
+			    "data:image/svg+xml;utf8," & 
+			    --- gradient---
+			    "<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -7 164 64'>" & Defs & 
+			     "<polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+			      stroke-width='0' points=' 0 50 " & Lines & 
+			      " 150 150 Z '/>" &
+			    --- Lines---
+			    "<polyline 
+			        fill='transparent' stroke='" & LineColour & "' 
+			        stroke-linecap='round' stroke-linejoin='round' 
+			        stroke-width='3' points=' " & Lines & 
+			      " '/>" &
+			    --- Last Point---
+			        "<circle cx='"& LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & LineColour & "' stroke-width='3' fill='" & PointColour & "' />" &
+			        "</svg>"
+			RETURN SVGImageURL
+			```
+		lineageTag: 7ef4becf-f91c-451d-8592-bfb5a1735367
+
+	measure 'Dynamic Coversion Growth %' = ```
+			
+			
+			DIVIDE(
+			    [Dynamic Conversions] -[Dynamic previous Coversions],
+			    [Dynamic previous Coversions]
+			)
+			
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: d860162e-6cfb-4a2f-b742-c45eb030515b
+
+	measure 'Dynamic FormSubmissions' =
+			
+			CALCULATE(
+			    [Total Form Submissions],DATESBETWEEN(DimDate[date],[Min Date],[Max Date]))
+		formatString: 0
+		lineageTag: 85bb0d28-4035-4132-9bc9-aff4cec262b7
+
+	measure 'FormSubmission sparkline' = ```
+			
+			// Static line color - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+			VAR LineColour = "%23118DFF"
+			VAR PointColour = "white"
+			VAR Defs = "<defs>
+			    <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+			        <stop stop-color='#118DFF' offset='0' />
+			        <stop stop-color='#118DFF' offset='0.3' />
+			        <stop stop-color='white' offset='1' />
+			    </linearGradient>
+			</defs>"
+			// "Date" field used in this example along the X axis
+			VAR XMinDate = [Min Date]
+			VAR XMaxDate = [Max Date]
+			
+			// Obtain overall min and overall max measure values when evaluated for each date
+			VAR YMinValue = MINX(Values(DimDate[date]),CALCULATE([Total Form Submissions]))
+			VAR YMaxValue = MAXX(Values(DimDate[date]),CALCULATE([Total Form Submissions]))
+			
+			// Build table of X & Y coordinates and fit to 50 x 150 viewbox
+			VAR SparklineTable = ADDCOLUMNS(
+			    SUMMARIZE(DimDate,DimDate[date]),
+			        "X",INT(150 * DIVIDE(DimDate[date] - XMinDate, XMaxDate - XMinDate)),
+			        "Y",INT(50 * DIVIDE([Total Form Submissions] - YMinValue,YMaxValue - YMinValue)))
+			
+			// Concatenate X & Y coordinates to build the sparkline
+			VAR Lines = CONCATENATEX(SparklineTable,[X] & "," & 50-[Y]," ", DimDate[date])
+			
+			// Last data points on the line
+			VAR LastSparkYValue = MAXX( FILTER(SparklineTable, DimDate[date] = XMaxDate), [Y])
+			VAR LastSparkXValue = MAXX( FILTER(SparklineTable, DimDate[date] = XMaxDate), [X])
+			
+			// Add to SVG, and verify Data Category is set to Image URL for this measure
+			VAR SVGImageURL = 
+			    "data:image/svg+xml;utf8," & 
+			    --- gradient---
+			    "<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -7 164 64'>" & Defs & 
+			     "<polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+			      stroke-width='0' points=' 0 50 " & Lines & 
+			      " 150 150 Z '/>" &
+			    --- Lines---
+			    "<polyline 
+			        fill='transparent' stroke='" & LineColour & "' 
+			        stroke-linecap='round' stroke-linejoin='round' 
+			        stroke-width='3' points=' " & Lines & 
+			      " '/>" &
+			    --- Last Point---
+			        "<circle cx='"& LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & LineColour & "' stroke-width='3' fill='" & PointColour & "' />" &
+			        "</svg>"
+			RETURN SVGImageURL
+			```
+		lineageTag: 27f34a3d-9f1e-4916-a1ae-f2d1670e0051
+
+	measure 'D previous Form Submissions' = ```
+			
+			
+			VAR DaysCount = [Max Date] - [Min Date] + 1
+			VAR PrevMinDate = [Min Date] - DaysCount
+			VAR PrevMaxDate = [Max Date] - DaysCount
+			
+			
+			RETURN
+			CALCULATE(
+			    [Total Form Submissions],
+			    DATESBETWEEN(DimDate[date], PrevMinDate, PrevMaxDate)
+			)
+			
+			```
+		formatString: 0
+		lineageTag: 972d4fef-b9b5-437f-9cef-67cb30373d0d
+
+	measure 'Dynamic Form Growth %' =
+			
+			
+			DIVIDE(
+			    [Dynamic FormSubmissions] -[D previous Form Submissions],
+			    [D previous Form Submissions]
+			)
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 9368784e-b3ce-47ae-be0a-c153f99da8d7
+
+	measure 'Total Subscribers' = SUM(FactSubscribers[new_subscribers])
+		formatString: 0
+		lineageTag: a2e38115-364f-4c40-81da-07d4f5ce773d
+
+	measure 'Dynamic Subscribers' =
+			
+			CALCULATE(
+			    [Total Subscribers],DATESBETWEEN(DimDate[date],[Min Date],[Max Date]))
+		formatString: 0
+		lineageTag: 4818829a-efa6-4c99-831e-39c26ebd2a74
+
+	measure 'Dynamic previous Subscribers' =
+			
+			
+			VAR DaysCount = [Max Date] - [Min Date] + 1
+			VAR PrevMinDate = [Min Date] - DaysCount
+			VAR PrevMaxDate = [Max Date] - DaysCount
+			
+			
+			RETURN
+			CALCULATE(
+			    [Total Subscribers],
+			    DATESBETWEEN(DimDate[date], PrevMinDate, PrevMaxDate)
+			)
+		formatString: 0
+		lineageTag: 8d3b309d-f689-483e-8246-5ae829ba39bb
+
+	measure 'Dynamic Subscriber Growth %' =
+			
+			
+			DIVIDE(
+			    [Dynamic Subscribers] -[Dynamic previous Subscribers],
+			    [Dynamic previous Subscribers]
+			    )
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 0f02cc84-91dd-474f-93e1-010a05562606
+
+	measure 'Subscirbers sparkline' = ```
+			
+			// Static line color - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+			VAR LineColour = "%23118DFF"
+			VAR PointColour = "white"
+			VAR Defs = "<defs>
+			    <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+			        <stop stop-color='#118DFF' offset='0' />
+			        <stop stop-color='#118DFF' offset='0.3' />
+			        <stop stop-color='white' offset='1' />
+			    </linearGradient>
+			</defs>"
+			// "Date" field used in this example along the X axis
+			VAR XMinDate = [Min Date]
+			VAR XMaxDate = [Max Date]
+			
+			// Obtain overall min and overall max measure values when evaluated for each date
+			VAR YMinValue = MINX(Values(DimDate[date]),CALCULATE([Total Sessions]))
+			VAR YMaxValue = MAXX(Values(DimDate[date]),CALCULATE([Total Sessions]))
+			
+			// Build table of X & Y coordinates and fit to 50 x 150 viewbox
+			VAR SparklineTable = ADDCOLUMNS(
+			    SUMMARIZE(DimDate,DimDate[date]),
+			        "X",INT(150 * DIVIDE(DimDate[date] - XMinDate, XMaxDate - XMinDate)),
+			        "Y",INT(50 * DIVIDE([Total Sessions] - YMinValue,YMaxValue - YMinValue)))
+			
+			// Concatenate X & Y coordinates to build the sparkline
+			VAR Lines = CONCATENATEX(SparklineTable,[X] & "," & 50-[Y]," ", DimDate[date])
+			
+			// Last data points on the line
+			VAR LastSparkYValue = MAXX( FILTER(SparklineTable, DimDate[date] = XMaxDate), [Y])
+			VAR LastSparkXValue = MAXX( FILTER(SparklineTable, DimDate[date] = XMaxDate), [X])
+			
+			// Add to SVG, and verify Data Category is set to Image URL for this measure
+			VAR SVGImageURL = 
+			    "data:image/svg+xml;utf8," & 
+			    --- gradient---
+			    "<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -7 164 64'>" & Defs & 
+			     "<polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+			      stroke-width='0' points=' 0 50 " & Lines & 
+			      " 150 150 Z '/>" &
+			    --- Lines---
+			    "<polyline 
+			        fill='transparent' stroke='" & LineColour & "' 
+			        stroke-linecap='round' stroke-linejoin='round' 
+			        stroke-width='3' points=' " & Lines & 
+			      " '/>" &
+			    --- Last Point---
+			        "<circle cx='"& LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & LineColour & "' stroke-width='3' fill='" & PointColour & "' />" &
+			        "</svg>"
+			RETURN SVGImageURL
+			```
+		lineageTag: b5cca096-dc2a-4d88-b081-184c18b70bff
+
+	measure 'Dynamic Users' =
+			
+			CALCULATE(
+			   [Total Users],DATESBETWEEN(DimDate[date],[Min Date],[Max Date]))
+		formatString: 0
+		lineageTag: 1d135b3c-6276-476b-b6ab-0ccb1991c70a
+
+	measure 'Dynamic previous Users' =
+			
+			
+			VAR DaysCount = [Max Date] - [Min Date] + 1
+			VAR PrevMinDate = [Min Date] - DaysCount
+			VAR PrevMaxDate = [Max Date] - DaysCount
+			
+			
+			RETURN
+			CALCULATE(
+			    [Total Users],
+			    DATESBETWEEN(DimDate[date], PrevMinDate, PrevMaxDate)
+			)
+		formatString: 0
+		lineageTag: 9e0c9403-9359-4266-8a6d-5a01559502e4
+
+	measure 'Dynamic Users Growth %' =
+			
+			
+			DIVIDE(
+			   [Dynamic Users] -[Dynamic previous Users],
+			   [Dynamic previous Users]
+			    )
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 635ce0e6-4f0b-4a1f-8db0-5c2f2c96558b
+
+	measure 'Users sparkline' = ```
+			
+			// Static line color - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+			VAR LineColour = "%23118DFF"
+			VAR PointColour = "white"
+			VAR Defs = "<defs>
+			    <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+			        <stop stop-color='#118DFF' offset='0' />
+			        <stop stop-color='#118DFF' offset='0.3' />
+			        <stop stop-color='white' offset='1' />
+			    </linearGradient>
+			</defs>"
+			// "Date" field used in this example along the X axis
+			VAR XMinDate = [Min Date]
+			VAR XMaxDate = [Max Date]
+			
+			// Obtain overall min and overall max measure values when evaluated for each date
+			VAR YMinValue = MINX(Values(DimDate[date]),CALCULATE([Total Users]))
+			VAR YMaxValue = MAXX(Values(DimDate[date]),CALCULATE([Total Users]))
+			
+			// Build table of X & Y coordinates and fit to 50 x 150 viewbox
+			VAR SparklineTable = ADDCOLUMNS(
+			    SUMMARIZE(DimDate,DimDate[date]),
+			        "X",INT(150 * DIVIDE(DimDate[date] - XMinDate, XMaxDate - XMinDate)),
+			        "Y",INT(50 * DIVIDE([Total Users] - YMinValue,YMaxValue - YMinValue)))
+			
+			// Concatenate X & Y coordinates to build the sparkline
+			VAR Lines = CONCATENATEX(SparklineTable,[X] & "," & 50-[Y]," ", DimDate[date])
+			
+			// Last data points on the line
+			VAR LastSparkYValue = MAXX( FILTER(SparklineTable, DimDate[date] = XMaxDate), [Y])
+			VAR LastSparkXValue = MAXX( FILTER(SparklineTable, DimDate[date] = XMaxDate), [X])
+			
+			// Add to SVG, and verify Data Category is set to Image URL for this measure
+			VAR SVGImageURL = 
+			    "data:image/svg+xml;utf8," & 
+			    --- gradient---
+			    "<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -7 164 64'>" & Defs & 
+			     "<polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+			      stroke-width='0' points=' 0 50 " & Lines & 
+			      " 150 150 Z '/>" &
+			    --- Lines---
+			    "<polyline 
+			        fill='transparent' stroke='" & LineColour & "' 
+			        stroke-linecap='round' stroke-linejoin='round' 
+			        stroke-width='3' points=' " & Lines & 
+			      " '/>" &
+			    --- Last Point---
+			        "<circle cx='"& LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & LineColour & "' stroke-width='3' fill='" & PointColour & "' />" &
+			        "</svg>"
+			RETURN SVGImageURL
+			```
+		lineageTag: 1831e7ad-c885-43e2-b7ca-aaa4e8233aaa
+
+	measure 'Total Impressions' = SUM(FactSocialPerformance[impressions])
+		formatString: 0
+		lineageTag: ed18469a-6d14-4ff1-8139-5bf340501c1b
+
+	measure 'Dynamic Impressions' =
+			
+			CALCULATE(
+			    [Total Impressions],DATESBETWEEN(DimDate[date],[Min Date],[Max Date]))
+		formatString: 0
+		lineageTag: cc12128f-48f6-42d4-bde9-4f46cb09ad08
+
+	measure 'Engagment Rate %' =
+			
+			
+			DIVIDE(
+			    [Dynamic Engagement],[Dynamic Impressions]
+			    )
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 53b0236a-4f43-407c-9f62-097267239522
+
+	measure 'Total sent emials' = SUM(FactEmail[sends])
+		formatString: 0
+		lineageTag: d0337aa2-de1f-4d40-90ab-8cb169cf6800
+
+	measure 'Total opens' = SUM(FactEmail[opens])
+		formatString: 0
+		lineageTag: 530ea5f0-fe14-49e5-be96-6b126244d8da
+
+	measure 'Total Clicks' = SUM(FactEmail[clicks])
+		formatString: 0
+		lineageTag: 4fb3db34-f14d-41b3-a784-29c43e0dc524
+
+	measure 'Dynamic Sent emails' =
+			
+			CALCULATE(
+			    [Total sent emials],DATESBETWEEN(DimDate[date],[Min Date],[Max Date]))
+		formatString: 0
+		lineageTag: ceaab9f3-1bd2-4cd8-97a2-cb03ce84dee6
+
+	measure 'Dynamic Opens' =
+			
+			CALCULATE(
+			    [Total opens],DATESBETWEEN(DimDate[date],[Min Date],[Max Date]))
+		formatString: 0
+		lineageTag: c8ad79e7-7ade-46f6-93d9-bd2c38772502
+
+	measure 'Dynamic Clicks' =
+			
+			CALCULATE(
+			    [Total Clicks],DATESBETWEEN(DimDate[date],[Min Date],[Max Date]))
+		formatString: 0
+		lineageTag: 4686e6f9-f6fe-40c3-862f-0604f00d825c
+
+	measure 'Dynamic CTR' = ```
+			
+			
+			DIVIDE(
+			    [Dynamic Clicks],[Dynamic Sent emails]
+			)
+			
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 6ac90bd6-dead-4e7a-bdd8-682b2878a23c
+
+	measure CTOR =
+			
+			DIVIDE(
+			    [Dynamic Clicks],[Dynamic Opens]
+			)
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: c4798104-d098-4082-8593-acb6a3886ebc
+
+	measure 'Top Medium' = ```
+			
+			VAR SourceTable =
+			    SUMMARIZE(
+			        DimUTM,
+			        DimUTM[medium],
+			        "TotalSessions", [Total Sessions]
+			    )
+			VAR TopChannel =
+			    TOPN(1, SourceTable, [TotalSessions], DESC)
+			RETURN
+			MAXX(TopChannel, DimUTM[medium])
+			
+			```
+		lineageTag: bd05fc62-af47-4a38-9486-4123226bb57d
+
+	measure 'Session Growth with Arrow' =
+			
+			VAR uparrow = UNICHAR(9650)
+			VAR downarrow = UNICHAR(9660)
+			VAR sessiongrowth = DIVIDE([Dynamic sessions] - [Dynamic previous Sessions], [Dynamic previous Sessions])
+			VAR growth_display = FORMAT(sessiongrowth, "0.0%")
+			
+			RETURN
+			IF(
+			    ISBLANK(sessiongrowth),
+			    BLANK(),
+			    IF(
+			        sessiongrowth < 0,
+			        growth_display & " " & downarrow,
+			        growth_display & " " & uparrow
+			    )
+			)
+		lineageTag: 731fe92c-0de9-43c4-87ec-e91e4a0561f8
+
+	measure 'E Rate with Arrow' =
+			
+			VAR uparrow = UNICHAR(9650)
+			VAR downarrow = UNICHAR(9660)
+			VAR sessiongrowth = DIVIDE([Dynamic Engagement], [Dynamic Impressions])
+			VAR growth_display = FORMAT(sessiongrowth, "0.0%")
+			
+			RETURN
+			IF(
+			    ISBLANK(sessiongrowth),
+			    BLANK(),
+			    IF(
+			        sessiongrowth < 0,
+			        growth_display & " " & downarrow,
+			        growth_display & " " & uparrow
+			    )
+			)
+		lineageTag: 6a31577d-ba40-407f-9a40-7bae5374ac2c
+
+	measure 'Conversion Growth with Arrow' =
+			
+			VAR uparrow = UNICHAR(9650)
+			VAR downarrow = UNICHAR(9660)
+			VAR sessiongrowth = DIVIDE([Dynamic Conversions] - [Dynamic previous Coversions], [Dynamic previous Coversions])
+			VAR growth_display = FORMAT(sessiongrowth, "0.0%")
+			
+			RETURN
+			IF(
+			    ISBLANK(sessiongrowth),
+			    BLANK(),
+			    IF(
+			        sessiongrowth < 0,
+			        growth_display & " " & downarrow,
+			        growth_display & " " & uparrow
+			    )
+			)
+		lineageTag: 6adbdb6f-9702-4585-af0e-ec9d1e4ac8ea
+
+	measure 'Submission Growth with Arrow' =
+			
+			VAR uparrow = UNICHAR(9650)
+			VAR downarrow = UNICHAR(9660)
+			VAR Submissiongrowth = DIVIDE([Dynamic FormSubmissions] - [D previous Form Submissions], [D previous Form Submissions])
+			VAR growth_display = FORMAT(Submissiongrowth, "0.0%")
+			
+			RETURN
+			IF(
+			    ISBLANK(Submissiongrowth),
+			    BLANK(),
+			    IF(
+			        Submissiongrowth < 0,
+			        growth_display & " " & downarrow,
+			        growth_display & " " & uparrow
+			    )
+			)
+		lineageTag: c514b99b-1c02-45db-9105-cec73f3368b4
+
+	measure 'Subscirber Growth with Arrow' =
+			
+			VAR uparrow = UNICHAR(9650)
+			VAR downarrow = UNICHAR(9660)
+			VAR Subscirbergrowth = DIVIDE([Dynamic Subscribers] - [Dynamic previous Subscribers], [Dynamic previous Subscribers])
+			VAR growth_display = FORMAT(Subscirbergrowth, "0.0%")
+			
+			RETURN
+			IF(
+			    ISBLANK(Subscirbergrowth),
+			    BLANK(),
+			    IF(
+			        Subscirbergrowth < 0,
+			        growth_display & " " & downarrow,
+			        growth_display & " " & uparrow
+			    )
+			)
+		lineageTag: de3936ef-1528-461f-9989-4cc1013ce447
+
+	measure 'Dynamic User Growth %' =
+			
+			
+			DIVIDE(
+			    [Dynamic Users] -[Dynamic previous Users],
+			    [Dynamic previous Users]
+			    )
+		lineageTag: 83401256-2e39-4034-83c5-940fc78394fb
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Users Growth with Arrow' =
+			
+			VAR uparrow = UNICHAR(9650)
+			VAR downarrow = UNICHAR(9660)
+			VAR usersgrowth = DIVIDE([Dynamic Users] - [Dynamic previous Users], [Dynamic previous Users])
+			VAR growth_display = FORMAT(usersgrowth, "0.0%")
+			
+			RETURN
+			IF(
+			    ISBLANK(usersgrowth),
+			    BLANK(),
+			    IF(
+			        usersgrowth < 0,
+			        growth_display & " " & downarrow,
+			        growth_display & " " & uparrow
+			    )
+			)
+		lineageTag: 13650255-36ef-41a3-bcba-794131786ec4
+
+	measure CTR = ```
+			
+			
+			DIVIDE(
+			    [Total Clicks],[Total sent emials]
+			)
+			
+			```
+		lineageTag: 31bf03a4-4815-42ae-adbd-f44d38192786
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Value
+		formatString: 0
+		lineageTag: 66cf0195-6853-4a7d-b4b7-06bd3656e49c
+		summarizeBy: sum
+		isNameInferred
+		sourceColumn: [Value]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition MeasuresTable = calculated
+		mode: import
+		source = {1}
+
+	annotation PBI_Id = 8e587352b5024d1eb554f258ac30b933
+

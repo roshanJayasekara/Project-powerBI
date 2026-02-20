@@ -1,0 +1,30 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-GB
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_QueryOrder = ["DimDate","DimPage","DimUTM","FactEmail","FactFormSubmissions","FactSocialPerformance","FactSubscribers","FactWeb","Period Slicer"]
+
+annotation PBI_ProTooling = ["DevMode"]
+
+ref table DimDate
+ref table DateTableTemplate_f2286725-d040-4ec4-bef5-6cf422db786c
+ref table LocalDateTable_15bcf4ab-3bb4-4fc9-8c32-e765a7fc2a80
+ref table DimPage
+ref table DimUTM
+ref table FactEmail
+ref table FactFormSubmissions
+ref table FactSocialPerformance
+ref table FactSubscribers
+ref table FactWeb
+ref table DimUTMEmail
+ref table MeasuresTable
+ref table 'Period Slicer'
+
+ref cultureInfo en-US
+

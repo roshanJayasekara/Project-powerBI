@@ -1,0 +1,89 @@
+table FactSocialPerformance
+	lineageTag: 87d77032-1b2a-4427-9e60-84e3384bada2
+
+	column date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 80560887-fea1-4c69-92b4-4e97a14ffb00
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column platform
+		dataType: string
+		lineageTag: 31418380-0266-4744-a097-106fae642059
+		summarizeBy: none
+		sourceColumn: platform
+
+		annotation SummarizationSetBy = Automatic
+
+	column campaign
+		dataType: string
+		lineageTag: 608ce769-b2b7-4ce1-b70c-20c1c7f3d545
+		summarizeBy: none
+		sourceColumn: campaign
+
+		annotation SummarizationSetBy = Automatic
+
+	column utm_id
+		dataType: string
+		lineageTag: 1f6581b5-94e9-4bcb-b3ef-734a71891072
+		summarizeBy: none
+		sourceColumn: utm_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column reach
+		dataType: int64
+		formatString: 0
+		lineageTag: a2feb487-fe65-4c14-a253-fa9d84e9e8b8
+		summarizeBy: sum
+		sourceColumn: reach
+
+		annotation SummarizationSetBy = Automatic
+
+	column impressions
+		dataType: int64
+		formatString: 0
+		lineageTag: cf6caaec-640a-4ee0-b83b-ed0949e9bef4
+		summarizeBy: sum
+		sourceColumn: impressions
+
+		annotation SummarizationSetBy = Automatic
+
+	column engagements
+		dataType: int64
+		formatString: 0
+		lineageTag: fcd8b0f8-1d42-41fa-b08a-911b65007c34
+		summarizeBy: sum
+		sourceColumn: engagements
+
+		annotation SummarizationSetBy = Automatic
+
+	column source_system
+		dataType: string
+		lineageTag: 56270de9-f3a7-43cd-b742-70256f66434e
+		summarizeBy: none
+		sourceColumn: source_system
+
+		annotation SummarizationSetBy = Automatic
+
+	partition FactSocialPerformance = m
+		mode: import
+		source =
+				let
+				    Source = Excel.Workbook(File.Contents("D:\portfolio\Seminal Artist Group\Marketing_Dashboard_Complete_Dataset_Jan2024_Sep2025.xlsx"), null, true),
+				    FactSocialPerformance_Sheet = Source{[Item="FactSocialPerformance",Kind="Sheet"]}[Data],
+				    #"Promoted Headers" = Table.PromoteHeaders(FactSocialPerformance_Sheet, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"date", Int64.Type}, {"platform", type text}, {"campaign", type text}, {"utm_id", type text}, {"reach", Int64.Type}, {"impressions", Int64.Type}, {"engagements", Int64.Type}, {"source_system", type text}}),
+				    #"Changed Type1" = Table.TransformColumnTypes(#"Changed Type",{{"date", type date}})
+				in
+				    #"Changed Type1"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

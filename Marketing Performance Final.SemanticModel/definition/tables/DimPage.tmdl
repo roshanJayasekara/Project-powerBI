@@ -1,0 +1,43 @@
+table DimPage
+	lineageTag: 08f1a4ff-6088-4b75-808c-844f15b27378
+
+	column page_id
+		dataType: string
+		lineageTag: 2b64bde0-374e-4ddb-a87e-c69a4589b7fb
+		summarizeBy: none
+		sourceColumn: page_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column page_title
+		dataType: string
+		lineageTag: e589233d-4c6f-44fb-8510-03b815488e78
+		summarizeBy: none
+		sourceColumn: page_title
+
+		annotation SummarizationSetBy = Automatic
+
+	column url
+		dataType: string
+		lineageTag: 72955eb1-a7a6-4647-8b51-2b42832aab6f
+		summarizeBy: none
+		sourceColumn: url
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimPage = m
+		mode: import
+		source =
+				let
+				    Source = Excel.Workbook(File.Contents("D:\portfolio\Seminal Artist Group\Marketing_Dashboard_Complete_Dataset_Jan2024_Sep2025.xlsx"), null, true),
+				    DimPage_Sheet = Source{[Item="DimPage",Kind="Sheet"]}[Data],
+				    #"Changed Type" = Table.TransformColumnTypes(DimPage_Sheet,{{"Column1", type text}, {"Column2", type text}, {"Column3", type text}}),
+				    #"Promoted Headers" = Table.PromoteHeaders(#"Changed Type", [PromoteAllScalars=true]),
+				    #"Changed Type1" = Table.TransformColumnTypes(#"Promoted Headers",{{"page_id", type text}, {"page_title", type text}, {"url", type text}})
+				in
+				    #"Changed Type1"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

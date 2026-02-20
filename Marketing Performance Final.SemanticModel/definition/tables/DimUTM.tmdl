@@ -1,0 +1,51 @@
+table DimUTM
+	lineageTag: 004b3b22-1a0e-4a29-80e0-482e20ac430d
+
+	column utm_id
+		dataType: string
+		lineageTag: 4b543bde-f2c7-4890-b11d-3c41e04fe4af
+		summarizeBy: none
+		sourceColumn: utm_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column source
+		dataType: string
+		lineageTag: 85f1bf09-b0bc-422c-ac7f-4b6781fa52d8
+		summarizeBy: none
+		sourceColumn: source
+
+		annotation SummarizationSetBy = Automatic
+
+	column medium
+		dataType: string
+		lineageTag: 941299cf-9297-463b-8bd7-273b4bd7b7e7
+		summarizeBy: none
+		sourceColumn: medium
+
+		annotation SummarizationSetBy = Automatic
+
+	column campaign
+		dataType: string
+		lineageTag: e9e25eee-3f87-418e-b317-c7e62e35c4d8
+		summarizeBy: none
+		sourceColumn: campaign
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimUTM = m
+		mode: import
+		source =
+				let
+				    Source = Excel.Workbook(File.Contents("D:\portfolio\Seminal Artist Group\Marketing_Dashboard_Complete_Dataset_Jan2024_Sep2025.xlsx"), null, true),
+				    DimUTM_Sheet = Source{[Item="DimUTM",Kind="Sheet"]}[Data],
+				    #"Changed Type" = Table.TransformColumnTypes(DimUTM_Sheet,{{"Column1", type text}, {"Column2", type text}, {"Column3", type text}, {"Column4", type text}}),
+				    #"Promoted Headers" = Table.PromoteHeaders(#"Changed Type", [PromoteAllScalars=true]),
+				    #"Changed Type1" = Table.TransformColumnTypes(#"Promoted Headers",{{"utm_id", type text}, {"source", type text}, {"medium", type text}, {"campaign", type text}})
+				in
+				    #"Changed Type1"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

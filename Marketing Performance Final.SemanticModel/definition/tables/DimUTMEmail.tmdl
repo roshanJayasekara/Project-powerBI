@@ -1,0 +1,41 @@
+table DimUTMEmail
+	lineageTag: 4dfa50fc-5e8c-497a-bddf-aaf242e92db0
+
+	column utm_id
+		lineageTag: 16de8167-52af-4bd5-b17a-e4deb7029662
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: DimUTM[utm_id]
+
+		annotation SummarizationSetBy = Automatic
+
+	column source
+		lineageTag: eb61c1b8-27cc-40c1-a3a6-5ba05949e530
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: DimUTM[source]
+
+		annotation SummarizationSetBy = Automatic
+
+	column medium
+		lineageTag: 7fcff16e-51ac-4cbf-9c0a-38821e21ed5d
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: DimUTM[medium]
+
+		annotation SummarizationSetBy = Automatic
+
+	column campaign
+		lineageTag: 5fbb0d9a-b5ce-47e3-ab62-a9c081ac750c
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: DimUTM[campaign]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimUTMEmail = calculated
+		mode: import
+		source = CALCULATETABLE(DimUTM,DimUTM[medium]= "Email")
+
+	annotation PBI_Id = e6161043aa5143539530676b953f123b
+

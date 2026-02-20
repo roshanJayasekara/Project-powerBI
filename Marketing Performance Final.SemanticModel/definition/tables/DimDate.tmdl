@@ -1,0 +1,123 @@
+table DimDate
+	lineageTag: d31c994b-7ca5-436e-95bc-2bcf3b504603
+
+	measure 'CTR sparkline' = ```
+			
+			// Static line color - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+			VAR LineColour = "%23118DFF"
+			VAR PointColour = "white"
+			VAR Defs = "<defs>
+			    <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+			        <stop stop-color='#118DFF' offset='0' />
+			        <stop stop-color='#118DFF' offset='0.3' />
+			        <stop stop-color='white' offset='1' />
+			    </linearGradient>
+			</defs>"
+			// "Date" field used in this example along the X axis
+			VAR XMinDate = [Min Date]
+			VAR XMaxDate = [Max Date]
+			
+			// Obtain overall min and overall max measure values when evaluated for each date
+			VAR YMinValue = MINX(Values(DimDate[date]),CALCULATE([CTR]))
+			VAR YMaxValue = MAXX(Values(DimDate[date]),CALCULATE([CTR]))
+			
+			// Build table of X & Y coordinates and fit to 50 x 150 viewbox
+			VAR SparklineTable = ADDCOLUMNS(
+			    SUMMARIZE(DimDate,DimDate[date]),
+			        "X",INT(150 * DIVIDE(DimDate[date] - XMinDate, XMaxDate - XMinDate)),
+			        "Y",INT(50 * DIVIDE([CTR]- YMinValue,YMaxValue - YMinValue)))
+			
+			// Concatenate X & Y coordinates to build the sparkline
+			VAR Lines = CONCATENATEX(SparklineTable,[X] & "," & 50-[Y]," ", DimDate[date])
+			
+			// Last data points on the line
+			VAR LastSparkYValue = MAXX( FILTER(SparklineTable, DimDate[date] = XMaxDate), [Y])
+			VAR LastSparkXValue = MAXX( FILTER(SparklineTable, DimDate[date] = XMaxDate), [X])
+			
+			// Add to SVG, and verify Data Category is set to Image URL for this measure
+			VAR SVGImageURL = 
+			    "data:image/svg+xml;utf8," & 
+			    --- gradient---
+			    "<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -7 164 64'>" & Defs & 
+			     "<polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+			      stroke-width='0' points=' 0 50 " & Lines & 
+			      " 150 150 Z '/>" &
+			    --- Lines---
+			    "<polyline 
+			        fill='transparent' stroke='" & LineColour & "' 
+			        stroke-linecap='round' stroke-linejoin='round' 
+			        stroke-width='3' points=' " & Lines & 
+			      " '/>" &
+			    --- Last Point---
+			        "<circle cx='"& LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & LineColour & "' stroke-width='3' fill='" & PointColour & "' />" &
+			        "</svg>"
+			RETURN SVGImageURL
+			```
+		lineageTag: 22b959b3-066e-40d5-8e4c-1bff6e0dd93e
+
+	column date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 83b927f6-afb2-4cc2-850f-a99ff5f850c3
+		summarizeBy: none
+		sourceColumn: date
+
+		variation Variation
+			isDefault
+			relationship: b044b639-36b0-4900-b818-48a7d2b80da8
+			defaultHierarchy: LocalDateTable_15bcf4ab-3bb4-4fc9-8c32-e765a7fc2a80.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column month
+		dataType: string
+		lineageTag: d5a18e47-df8d-400d-8fb0-5a17a8a4db2a
+		summarizeBy: none
+		sourceColumn: month
+
+		annotation SummarizationSetBy = Automatic
+
+	column week
+		dataType: int64
+		formatString: 0
+		lineageTag: c7c66586-d2d0-4a45-b53a-cd0d6a9f5752
+		summarizeBy: sum
+		sourceColumn: week
+
+		annotation SummarizationSetBy = Automatic
+
+	column year
+		dataType: int64
+		formatString: 0
+		lineageTag: ed0b1fe7-6927-4c73-bcde-55c3251233a7
+		summarizeBy: sum
+		sourceColumn: year
+
+		annotation SummarizationSetBy = Automatic
+
+	column YearMonth =
+			
+			FORMAT([date], "YYYY-MM")
+		lineageTag: e4c11fdd-093d-48c2-b4b1-7cffa85eafe0
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimDate = m
+		mode: import
+		source =
+				let
+				    Source = Excel.Workbook(File.Contents("D:\portfolio\Seminal Artist Group\Marketing_Dashboard_Complete_Dataset_Jan2024_Sep2025.xlsx"), null, true),
+				    DimDate_Sheet = Source{[Item="DimDate",Kind="Sheet"]}[Data],
+				    #"Promoted Headers" = Table.PromoteHeaders(DimDate_Sheet, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"date", Int64.Type}, {"month", type text}, {"week", Int64.Type}, {"year", Int64.Type}}),
+				    #"Changed Type1" = Table.TransformColumnTypes(#"Changed Type",{{"date", type date}})
+				in
+				    #"Changed Type1"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

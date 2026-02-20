@@ -1,0 +1,108 @@
+table FactWeb
+	lineageTag: 36bf13f4-e964-4a69-8605-2a57865ed0d7
+
+	column date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 221ee132-0848-4d34-8b06-0c0527106f3e
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column utm_id
+		dataType: string
+		lineageTag: 9af5964a-7ec0-4d38-bc56-86cce76a200f
+		summarizeBy: none
+		sourceColumn: utm_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column page_id
+		dataType: string
+		lineageTag: ea12cb05-616a-46b8-b48a-95f58111d50e
+		summarizeBy: none
+		sourceColumn: page_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column sessions
+		dataType: int64
+		formatString: 0
+		lineageTag: 557df83e-8f41-4d97-b200-820513f72785
+		summarizeBy: sum
+		sourceColumn: sessions
+
+		annotation SummarizationSetBy = Automatic
+
+	column pageviews
+		dataType: int64
+		formatString: 0
+		lineageTag: dbccedb8-0512-495e-86f8-91ec183051ca
+		summarizeBy: sum
+		sourceColumn: pageviews
+
+		annotation SummarizationSetBy = Automatic
+
+	column conversions
+		dataType: int64
+		formatString: 0
+		lineageTag: 29169071-e902-4769-a896-9fe4ea2f8cc2
+		summarizeBy: sum
+		sourceColumn: conversions
+
+		annotation SummarizationSetBy = Automatic
+
+	column bounces
+		dataType: int64
+		formatString: 0
+		lineageTag: 2ece0a2d-4693-4b31-b1d1-7f2f84ae689a
+		summarizeBy: sum
+		sourceColumn: bounces
+
+		annotation SummarizationSetBy = Automatic
+
+	column avg_session_duration
+		dataType: int64
+		formatString: 0
+		lineageTag: f0c5a9f7-af46-4361-be00-fa7cdf521a25
+		summarizeBy: sum
+		sourceColumn: avg_session_duration
+
+		annotation SummarizationSetBy = Automatic
+
+	column users
+		dataType: int64
+		formatString: 0
+		lineageTag: ec33ce0d-251d-495d-b531-9a0ea621bf7e
+		summarizeBy: sum
+		sourceColumn: users
+
+		annotation SummarizationSetBy = Automatic
+
+	column source_system
+		dataType: string
+		lineageTag: 696af7ee-3447-42a6-82dd-c302c41c6819
+		summarizeBy: none
+		sourceColumn: source_system
+
+		annotation SummarizationSetBy = Automatic
+
+	partition FactWeb = m
+		mode: import
+		source =
+				let
+				    Source = Excel.Workbook(File.Contents("D:\portfolio\Seminal Artist Group\Marketing_Dashboard_Complete_Dataset_Jan2024_Sep2025.xlsx"), null, true),
+				    FactWeb_Sheet = Source{[Item="FactWeb",Kind="Sheet"]}[Data],
+				    #"Promoted Headers" = Table.PromoteHeaders(FactWeb_Sheet, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"date", Int64.Type}, {"utm_id", type text}, {"page_id", type text}, {"sessions", Int64.Type}, {"pageviews", Int64.Type}, {"conversions", Int64.Type}, {"bounces", Int64.Type}, {"avg_session_duration", Int64.Type}, {"users", Int64.Type}, {"source_system", type text}}),
+				    #"Changed Type1" = Table.TransformColumnTypes(#"Changed Type",{{"date", type date}})
+				in
+				    #"Changed Type1"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

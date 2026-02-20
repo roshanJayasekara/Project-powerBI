@@ -1,0 +1,63 @@
+table FactFormSubmissions
+	lineageTag: abc32593-5933-431b-9884-ba6e13ed393c
+
+	column date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 62db8d00-af88-4373-b698-92faf474e9b9
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column utm_id
+		dataType: string
+		lineageTag: addbe958-c994-4d76-a2e1-d4ae18225c2a
+		summarizeBy: none
+		sourceColumn: utm_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column form_type
+		dataType: string
+		lineageTag: 585c540b-132b-483f-941b-ebc20ffd051f
+		summarizeBy: none
+		sourceColumn: form_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column submissions
+		dataType: int64
+		formatString: 0
+		lineageTag: 7f6e2f71-0361-49fb-aa21-b9e211966366
+		summarizeBy: sum
+		sourceColumn: submissions
+
+		annotation SummarizationSetBy = Automatic
+
+	column source_system
+		dataType: string
+		lineageTag: f332ddb1-7f17-426e-852b-739c97b73116
+		summarizeBy: none
+		sourceColumn: source_system
+
+		annotation SummarizationSetBy = Automatic
+
+	partition FactFormSubmissions = m
+		mode: import
+		source =
+				let
+				    Source = Excel.Workbook(File.Contents("D:\portfolio\Seminal Artist Group\Marketing_Dashboard_Complete_Dataset_Jan2024_Sep2025.xlsx"), null, true),
+				    FactFormSubmissions_Sheet = Source{[Item="FactFormSubmissions",Kind="Sheet"]}[Data],
+				    #"Promoted Headers" = Table.PromoteHeaders(FactFormSubmissions_Sheet, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"date", Int64.Type}, {"utm_id", type text}, {"form_type", type text}, {"submissions", Int64.Type}, {"source_system", type text}}),
+				    #"Changed Type1" = Table.TransformColumnTypes(#"Changed Type",{{"date", type date}})
+				in
+				    #"Changed Type1"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

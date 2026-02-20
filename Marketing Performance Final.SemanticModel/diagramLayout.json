@@ -1,0 +1,164 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 328.75,
+        "y": 0
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 952.78343272812708,
+            "y": 0
+          },
+          "nodeIndex": "DimDate",
+          "nodeLineageTag": "d31c994b-7ca5-436e-95bc-2bcf3b504603",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 1
+        },
+        {
+          "location": {
+            "x": 667.53343272812708,
+            "y": 0
+          },
+          "nodeIndex": "DimPage",
+          "nodeLineageTag": "08f1a4ff-6088-4b75-808c-844f15b27378",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 2
+        },
+        {
+          "location": {
+            "x": 325.09165596935827,
+            "y": 0
+          },
+          "nodeIndex": "DimUTM",
+          "nodeLineageTag": "004b3b22-1a0e-4a29-80e0-482e20ac430d",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 3
+        },
+        {
+          "location": {
+            "x": 1533.0334327281271,
+            "y": 507.88240884340041
+          },
+          "nodeIndex": "FactEmail",
+          "nodeLineageTag": "fc87bbd4-9fe2-4e94-906f-eba8c606e5b3",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 4
+        },
+        {
+          "location": {
+            "x": 989.29738195639789,
+            "y": 533.75
+          },
+          "nodeIndex": "FactFormSubmissions",
+          "nodeLineageTag": "abc32593-5933-431b-9884-ba6e13ed393c",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 5
+        },
+        {
+          "location": {
+            "x": 343.0696799140029,
+            "y": 496.51481768680082
+          },
+          "nodeIndex": "FactSocialPerformance",
+          "nodeLineageTag": "87d77032-1b2a-4427-9e60-84e3384bada2",
+          "size": {
+            "height": 272,
+            "width": 234
+          },
+          "zIndex": 6
+        },
+        {
+          "location": {
+            "x": 20,
+            "y": 503.41470236509838
+          },
+          "nodeIndex": "FactSubscribers",
+          "nodeLineageTag": "aacb15c6-cfb9-4435-96c8-89b97c8aa4de",
+          "size": {
+            "height": 243.5,
+            "width": 247.75
+          },
+          "zIndex": 9
+        },
+        {
+          "location": {
+            "x": 665.83164076355547,
+            "y": 477.68287770483846
+          },
+          "nodeIndex": "FactWeb",
+          "nodeLineageTag": "36bf13f4-e964-4a69-8605-2a57865ed0d7",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 7
+        },
+        {
+          "location": {
+            "x": 1248.2834327281271,
+            "y": 0
+          },
+          "nodeIndex": "DimUTMEmail",
+          "nodeLineageTag": "4dfa50fc-5e8c-497a-bddf-aaf242e92db0",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 8
+        },
+        {
+          "location": {
+            "x": 1741.0334327281271,
+            "y": 249.46643885241923
+          },
+          "nodeIndex": "MeasuresTable",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1752.5334327281271,
+            "y": 39.21643885241923
+          },
+          "nodeIndex": "Period Slicer",
+          "nodeLineageTag": "1cffa85b-a8d6-455d-bb45-2922be00fc7c",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "All tables",
+      "zoomValue": 80,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "All tables",
+  "defaultDiagram": "All tables"
+}

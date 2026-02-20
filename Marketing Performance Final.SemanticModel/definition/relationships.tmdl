@@ -1,0 +1,55 @@
+relationship b044b639-36b0-4900-b818-48a7d2b80da8
+	joinOnDateBehavior: datePartOnly
+	fromColumn: DimDate.date
+	toColumn: LocalDateTable_15bcf4ab-3bb4-4fc9-8c32-e765a7fc2a80.Date
+
+relationship AutoDetected_43f38f56-e84c-4f7a-9f4f-c73dcac065f2
+	fromColumn: FactWeb.page_id
+	toColumn: DimPage.page_id
+
+relationship AutoDetected_817b5d39-bcb5-402f-a014-56db7c873ce5
+	fromColumn: FactFormSubmissions.utm_id
+	toColumn: DimUTM.utm_id
+
+relationship AutoDetected_5c9c3ec6-edf4-4f49-ba7f-22969aa9de8c
+	fromColumn: FactSocialPerformance.utm_id
+	toColumn: DimUTM.utm_id
+
+relationship AutoDetected_57de4b2f-ffd3-4c4a-86f0-02ca8981e32b
+	fromColumn: FactSubscribers.utm_id
+	toColumn: DimUTM.utm_id
+
+relationship AutoDetected_8cc09126-9d83-4271-856d-94ee349334fe
+	fromColumn: FactWeb.utm_id
+	toColumn: DimUTM.utm_id
+
+relationship 0d2a95ec-a938-10cf-90d4-133924c7ed80
+	fromColumn: FactSubscribers.date
+	toColumn: DimDate.date
+
+relationship 208e4e8a-586a-96b4-2f81-5c0d052874a6
+	fromColumn: FactSocialPerformance.date
+	toColumn: DimDate.date
+
+relationship 3280eafb-776c-d8a3-f4f0-77f0310bc99c
+	fromColumn: FactWeb.date
+	toColumn: DimDate.date
+
+relationship 9000eadd-c7de-b990-5aff-f73499dd982b
+	fromColumn: FactEmail.date
+	toColumn: DimDate.date
+
+relationship e65c6e93-cb12-d32d-514d-80268eab8e4a
+	crossFilteringBehavior: bothDirections
+	fromCardinality: one
+	fromColumn: DimUTMEmail.utm_id
+	toColumn: DimUTM.utm_id
+
+relationship 20fb2a5a-d2a6-e11d-51c7-238224805634
+	fromColumn: FactEmail.campaign
+	toColumn: DimUTMEmail.campaign
+
+relationship 947a7719-d6d4-0922-6db5-d4532cded563
+	fromColumn: FactFormSubmissions.date
+	toColumn: DimDate.date
+

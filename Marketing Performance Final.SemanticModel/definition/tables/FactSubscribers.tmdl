@@ -1,0 +1,55 @@
+table FactSubscribers
+	lineageTag: aacb15c6-cfb9-4435-96c8-89b97c8aa4de
+
+	column date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: d17c788a-c96c-4561-adb3-8191455880fb
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column utm_id
+		dataType: string
+		lineageTag: 67a26775-4f86-4142-ac1b-5afecf03cf7a
+		summarizeBy: none
+		sourceColumn: utm_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column new_subscribers
+		dataType: int64
+		formatString: 0
+		lineageTag: 2cfa64c6-2bf5-4cd6-99e6-e241ff0fc217
+		summarizeBy: sum
+		sourceColumn: new_subscribers
+
+		annotation SummarizationSetBy = Automatic
+
+	column source_system
+		dataType: string
+		lineageTag: 20431d62-e0e9-4918-bab4-384fe487db5f
+		summarizeBy: none
+		sourceColumn: source_system
+
+		annotation SummarizationSetBy = Automatic
+
+	partition FactSubscribers = m
+		mode: import
+		source =
+				let
+				    Source = Excel.Workbook(File.Contents("D:\portfolio\Seminal Artist Group\Marketing_Dashboard_Complete_Dataset_Jan2024_Sep2025.xlsx"), null, true),
+				    FactSubscribers_Sheet = Source{[Item="FactSubscribers",Kind="Sheet"]}[Data],
+				    #"Promoted Headers" = Table.PromoteHeaders(FactSubscribers_Sheet, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"date", Int64.Type}, {"utm_id", type text}, {"new_subscribers", Int64.Type}, {"source_system", type text}}),
+				    #"Changed Type1" = Table.TransformColumnTypes(#"Changed Type",{{"date", type date}})
+				in
+				    #"Changed Type1"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

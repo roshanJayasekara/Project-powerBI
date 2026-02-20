@@ -1,8 +1,3 @@
-relationship b044b639-36b0-4900-b818-48a7d2b80da8
-	joinOnDateBehavior: datePartOnly
-	fromColumn: DimDate.date
-	toColumn: LocalDateTable_15bcf4ab-3bb4-4fc9-8c32-e765a7fc2a80.Date
-
 relationship AutoDetected_43f38f56-e84c-4f7a-9f4f-c73dcac065f2
 	fromColumn: FactWeb.page_id
 	toColumn: DimPage.page_id

@@ -1,6 +1,5 @@
 table DimDate
 	lineageTag: d31c994b-7ca5-436e-95bc-2bcf3b504603
-	dataCategory: Time
 
 	measure 'CTR sparkline' = ```
 			
@@ -58,11 +57,15 @@ table DimDate
 
 	column date
 		dataType: dateTime
-		isKey
 		formatString: Long Date
 		lineageTag: 83b927f6-afb2-4cc2-850f-a99ff5f850c3
 		summarizeBy: none
 		sourceColumn: date
+
+		variation Variation
+			isDefault
+			relationship: b044b639-36b0-4900-b818-48a7d2b80da8
+			defaultHierarchy: LocalDateTable_15bcf4ab-3bb4-4fc9-8c32-e765a7fc2a80.'Date Hierarchy'
 
 		annotation SummarizationSetBy = Automatic
 

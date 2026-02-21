@@ -47,14 +47,6 @@ table FactEmail
 
 		annotation SummarizationSetBy = Automatic
 
-	column source_system
-		dataType: string
-		lineageTag: fe8e7eaf-4fae-4c0e-9b5a-c665932e62d1
-		summarizeBy: none
-		sourceColumn: source_system
-
-		annotation SummarizationSetBy = Automatic
-
 	partition FactEmail = m
 		mode: import
 		source =
@@ -63,9 +55,10 @@ table FactEmail
 				    FactEmail_Sheet = Source{[Item="FactEmail",Kind="Sheet"]}[Data],
 				    #"Promoted Headers" = Table.PromoteHeaders(FactEmail_Sheet, [PromoteAllScalars=true]),
 				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"date", Int64.Type}, {"campaign", type text}, {"sends", Int64.Type}, {"opens", Int64.Type}, {"clicks", Int64.Type}, {"source_system", type text}}),
-				    #"Changed Type1" = Table.TransformColumnTypes(#"Changed Type",{{"date", type date}})
+				    #"Changed Type1" = Table.TransformColumnTypes(#"Changed Type",{{"date", type date}}),
+				    #"Columns removed"= Table.SelectColumns(#"Changed Type1",{"campaign","clicks","opens","sends","date"})
 				in
-				    #"Changed Type1"
+				    #"Columns removed"
 
 	annotation PBI_NavigationStepName = Navigation
 
